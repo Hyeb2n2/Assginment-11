@@ -1,5 +1,5 @@
 ---
-title: "Brian's Flexdashboard"
+title: "Hyebeen's Flexdashboard"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -17,21 +17,18 @@ library(shiny)
 library(shinydashboard)
 ```
 
-Write text here that you want to appear in the grey section at the top of your flexdashboard.
-
-
 ```{r}
-galton <- readRDS("galton.rds") #read in rds file
-cities_file <- read.csv("worldcities.csv") #read in dataset
+# Load required packages
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(dslabs))
+view(gapminder)
 ```
 
 ```{r}
-cities <- cities_file %>% #cleaning
-  select(city_ascii,country,iso3, population,lat,lng) %>%
-  rename(City = city_ascii,
-         Country = country,
-         Abbr = iso3
-         )
+gapminder_cat <- gapminder %>%
+mutate(
+  year_cat = as.factor(year)
+  )
 ```
 
 
@@ -41,13 +38,14 @@ Column {data-width=650}
 ### Chart A
 
 ```{r}
-ggplotly(ggplot(data = galton) + #static plot
-  geom_histogram(aes(x = height, fill=sex), binwidth = 1, alpha = 0.5, position = "identity") +
-  labs(
-    title = "Child Height Vs Father Height",
-    x = "Father's Height (inches)",
-    y = "frequency (n)"
-  ))
+kim <- gapminder %>%
+ggplot() +
+geom_histogram(mapping = aes(x = infant_mortality, fill = continent), bins = 30)+
+labs(
+title = "A histogram of infant_mortality",
+x = "infant_mortality")
+
+ggplotly(kim)
 ```
 
 Column {data-width=350}
@@ -56,25 +54,42 @@ Column {data-width=350}
 ### Chart B
 
 ```{r}
-ggplotly(ggplot(galton) + #static plot
-  geom_point(aes(father,height,color = sex)) +
-  labs(
-    title = "Child Height vs Father Height",
-    x = "Father Height (inches)",
-    y = "Child Height (inches)"
-  ))
+kim_1 <- gapminder %>%
+ggplot()+
+geom_point (
+mapping = aes(
+x = life_expectancy,
+y = infant_mortality, color = continent
+)
+) +
+labs(
+title = "A scatter plot of life_expectancy_andinfant_mortality",
+x = "life_expectancy" ,
+y = "infant_mortality"
+)
+
+ggplotly(kim_1)
 ```
 
 ### Chart C
 
 ```{r}
-ggplotly(ggplot(galton) + #static plot
-  geom_point(aes(father, height, color = sex), size=2) +
-  geom_smooth(aes(father,height), method="lm") +
-  labs(
-    title = "Child Height vs Father Height (static)",
-    x = "Father's Height (inches)",
-    y = "Child's Height (inches)"
-  ))
+kime_2 <- gapminder_cat %>%
+  filter(year %% 10 == 0) %>%
+  ggplot() +
+  geom_histogram(
+    mapping = aes(
+      x = life_expectancy,
+      color = year_cat
+    ),
+    bins = 20
+  ) +
+  facet_wrap(~ continent) +
+   labs(
+    title = "Increasing life expectancy over time in the world",
+    x = "life expectancy",
+    )
+
+ggplotly(kime_2)
 ```
 
